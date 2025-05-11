@@ -28,10 +28,25 @@ if __name__ == "__main__":
     print(f"Інтеграл (Метод quad): {integral_true:.6f} (похибка: {error:.6e})\n")
 
     # Обчислення методом Монте-Карло з різною кількістю точок
+    print(f"Обчислення методом Монте-Карло з різною кількістю точок")
     for N in [100, 1000, 10000, 100000, 1000000, 10000000]:
         integral_mc = monte_carlo_integral(f, a, b, N)
         abs_error = abs(integral_mc - integral_true)
         print(f"Кількість точок: {N}")
         print(f"Інтеграл (Метод Монте-Карло): {integral_mc:.6f}")
         print(f"Абсолютна похибка: {abs_error:.6f}\n")
+
+    # Обчислення методом Монте-Карло з усередненням по різній кількості спроб
+    print(f"Обчислення методом Монте-Карло з усередненням по різній кількості спроб")
+    for trials in [10, 100, 1000]:
+        for N in [100, 1000, 10000, 100000]:
+            integral_sum = 0
+            for _ in range(trials):
+                integral_sum += monte_carlo_integral(f, a, b, N)
+            integral_avg = integral_sum / trials
+            abs_error = abs(integral_avg - integral_true)
+            print(f"Кількість точок: {N}, Кількість спроб: {trials}")
+            print(f"Інтеграл (усереднений Монте-Карло): {integral_avg:.6f}")
+            print(f"Абсолютна похибка: {abs_error:.6f}\n")
+
 
