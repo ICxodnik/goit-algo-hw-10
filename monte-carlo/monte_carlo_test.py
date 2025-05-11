@@ -1,4 +1,5 @@
 import numpy as np
+import matplotlib.pyplot as plt
 from scipy.integrate import quad
 
 # Параметри
@@ -15,38 +16,38 @@ def monte_carlo_integral(func, a, b, N):
     y_rand = func(x_rand)
     return (b - a) * np.mean(y_rand)
 
-# Функція для перевірки коректності меж
-def check_limits(a, b):
-    if a >= b:
-        raise ValueError("Нижня межа повинна бути меншою за верхню.")
+# Обчислення точного значення інтегралу
+integral_true, _ = quad(f, a, b)
 
-if __name__ == "__main__":
-    check_limits(a, b)
+# Масиви для збереження результатів
+Ns = [100, 1000, 10000, 100000]
+trial_counts = [1, 10, 100, 1000]
 
-    # Обчислення точного значення інтегралу
-    integral_true, error = quad(f, a, b)
-    print(f"Інтеграл (Метод quad): {integral_true:.6f} (похибка: {error:.6e})\n")
+results = {}
 
-    # Обчислення методом Монте-Карло з різною кількістю точок
-    print(f"Обчислення методом Монте-Карло з різною кількістю точок")
-    for N in [100, 1000, 10000, 100000, 1000000, 10000000]:
-        integral_mc = monte_carlo_integral(f, a, b, N)
-        abs_error = abs(integral_mc - integral_true)
-        print(f"Кількість точок: {N}")
-        print(f"Інтеграл (Метод Монте-Карло): {integral_mc:.6f}")
-        print(f"Абсолютна похибка: {abs_error:.6f}\n")
+# Обчислення усереднених інтегралів методом Монте-Карло
+for trials in trial_counts:
+    errors = []
+    for N in Ns:
+        integral_sum = 0
+        for _ in range(trials):
+            integral_sum += monte_carlo_integral(f, a, b, N)
+        integral_avg = integral_sum / trials
+        abs_error = abs(integral_avg - integral_true)
+        errors.append(abs_error)
+    results[trials] = errors
 
-    # Обчислення методом Монте-Карло з усередненням по різній кількості спроб
-    print(f"Обчислення методом Монте-Карло з усередненням по різній кількості спроб")
-    for trials in [10, 100, 1000]:
-        for N in [100, 1000, 10000, 100000]:
-            integral_sum = 0
-            for _ in range(trials):
-                integral_sum += monte_carlo_integral(f, a, b, N)
-            integral_avg = integral_sum / trials
-            abs_error = abs(integral_avg - integral_true)
-            print(f"Кількість точок: {N}, Кількість спроб: {trials}")
-            print(f"Інтеграл (усереднений Монте-Карло): {integral_avg:.6f}")
-            print(f"Абсолютна похибка: {abs_error:.6f}\n")
+# Побудова графіка
+plt.figure(figsize=(10, 6))
+for trials, errors in results.items():
+    plt.plot(Ns, errors, marker='o', label=f'{trials} спроб')
 
-
+plt.xscale('log')
+plt.yscale('log')
+plt.xlabel('Кількість точок N (лог. шкала)')
+plt.ylabel('Абсолютна похибка (лог. шкала)')
+plt.title('Залежність похибки Монте-Карло від N і кількості спроб')
+plt.legend()
+plt.grid(True, which="both", ls="--", lw=0.5)
+plt.tight_layout()
+plt.show()
